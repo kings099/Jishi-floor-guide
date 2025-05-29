@@ -16,7 +16,9 @@ import {
   Tag,
   Plus,
   Zap,
-  Users
+  Users,
+  PanelLeftClose,
+  PanelLeftOpen
 } from "lucide-react";
 
 // 类型定义
@@ -100,6 +102,7 @@ export default function FloorGuide() {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [renderCount, setRenderCount] = useState(0);
   const forceRerender = () => setRenderCount(prev => prev + 1);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
   // 监控标签显示状态的变化
   useEffect(() => {
@@ -107,6 +110,10 @@ export default function FloorGuide() {
     // 同步ref值
     showLabelsRef.current = showLabels;
   }, [showLabels, renderCount]);
+
+  const toggleSidebar = () => {
+    setIsSidebarVisible(prev => !prev);
+  };
 
   // 添加一个辅助函数，将房间的绝对坐标转换为相对坐标
   const convertToRelativeCoordinates = useCallback(() => {
@@ -826,6 +833,14 @@ export default function FloorGuide() {
                 </div>
               )}
 
+              <button
+                onClick={toggleSidebar}
+                className={`${commonStyles.button} hidden lg:flex items-center gap-2 bg-white/50 hover:bg-white/80 text-gray-700 hover:text-gray-900`}
+              >
+                {isSidebarVisible ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
+                <span className="hidden sm:inline">{isSidebarVisible ? "关闭侧栏" : "打开侧栏"}</span>
+              </button>
+
               <div className="relative w-64">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -960,6 +975,7 @@ export default function FloorGuide() {
         {devMode && (
           <div className="absolute top-4 right-4 z-50 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-gray-200 text-xs">
             <div className="font-bold mb-1">调试信息</div>
+            <div className={isSidebarVisible ? "text-green-600" : "text-red-600"}>侧边栏: {isSidebarVisible ? '显示' : '隐藏'}</div>
             <div className={showLabels ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
               标签显示状态: {showLabels ? '显示✓' : '隐藏✗'}
             </div>
@@ -1009,65 +1025,67 @@ export default function FloorGuide() {
         )}
         
         {/* Sidebar */}
-        <aside className="absolute left-4 top-4 z-40 hidden lg:block w-80 shrink-0">
-          <div className="space-y-4">
-            {/* Stats Card */}
-            <div className={commonStyles.card}>
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Zap size={18} className="text-blue-500" />
-                统计信息
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                {Object.entries(ROOM_TYPES).map(([type, info]) => (
-                  <div key={type} className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-lg p-3 text-center">
-                    <div className="text-2xl font-bold text-gray-800">
-                      {rooms.filter(r => r.type === type).length}
-                    </div>
-                    <div className="text-xs text-gray-600">{info.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Room List Card */}
-            <div className={`${commonStyles.card} max-h-[50vh] overflow-y-auto`}>
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <MapPin size={18} className="text-blue-500" />
-                位置列表 ({filteredRooms.length})
-              </h3>
-
-              {filteredRooms.length ? (
-                <div className="space-y-2">
-                  {filteredRooms.map((room) => (
-                    <button
-                      key={room.id}
-                      className={`w-full text-left p-3 rounded-xl transition-all duration-200 hover:bg-white/80 hover:shadow-md group 
-                        ${hoveredRoom === room.id ? 'bg-white/80 shadow-md' : 'bg-gray-50/50'}`}
-                      onClick={() => setSelectedRoom(room)}
-                      onMouseEnter={() => setHoveredRoom(room.id)}
-                      onMouseLeave={() => setHoveredRoom(null)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 ${getRoomColor(room.type)} rounded-lg flex items-center justify-center text-white shadow-lg`}>
-                          {getRoomIcon(room.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900 truncate">{room.name}</div>
-                          <div className="text-sm text-gray-500 truncate">{room.description}</div>
-                        </div>
+        {isSidebarVisible && (
+          <aside className="absolute left-4 top-4 z-40 hidden lg:block w-80 shrink-0">
+            <div className="space-y-4">
+              {/* Stats Card */}
+              <div className={commonStyles.card}>
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Zap size={18} className="text-blue-500" />
+                  统计信息
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {Object.entries(ROOM_TYPES).map(([type, info]) => (
+                    <div key={type} className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-lg p-3 text-center">
+                      <div className="text-2xl font-bold text-gray-800">
+                        {rooms.filter(r => r.type === type).length}
                       </div>
-                    </button>
+                      <div className="text-xs text-gray-600">{info.label}</div>
+                    </div>
                   ))}
                 </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Search size={24} className="mx-auto mb-2 opacity-50" />
-                  <p>未找到匹配的房间</p>
-                </div>
-              )}
+              </div>
+
+              {/* Room List Card */}
+              <div className={`${commonStyles.card} max-h-[50vh] overflow-y-auto`}>
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <MapPin size={18} className="text-blue-500" />
+                  位置列表 ({filteredRooms.length})
+                </h3>
+
+                {filteredRooms.length ? (
+                  <div className="space-y-2">
+                    {filteredRooms.map((room) => (
+                      <button
+                        key={room.id}
+                        className={`w-full text-left p-3 rounded-xl transition-all duration-200 hover:bg-white/80 hover:shadow-md group 
+                          ${hoveredRoom === room.id ? 'bg-white/80 shadow-md' : 'bg-gray-50/50'}`}
+                        onClick={() => setSelectedRoom(room)}
+                        onMouseEnter={() => setHoveredRoom(room.id)}
+                        onMouseLeave={() => setHoveredRoom(null)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 ${getRoomColor(room.type)} rounded-lg flex items-center justify-center text-white shadow-lg`}>
+                            {getRoomIcon(room.type)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-gray-900 truncate">{room.name}</div>
+                            <div className="text-sm text-gray-500 truncate">{room.description}</div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Search size={24} className="mx-auto mb-2 opacity-50" />
+                    <p>未找到匹配的房间</p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        )}
 
         {/* Map Container */}
         <div className="h-full">
