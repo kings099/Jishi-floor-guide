@@ -43,7 +43,7 @@ const ROOM_TYPES = {
 } as const;
 
 const FALLBACK_ROOMS: Room[] = [];
-const imageUrl = "/floor.jpg";
+const imageUrl = `${import.meta.env.BASE_URL}floor.jpg`;
 
 // 公共样式
 const commonStyles = {
@@ -238,7 +238,7 @@ export default function FloorGuide() {
 
   // 加载房间数据
   useEffect(() => {
-    fetch("/rooms.json")
+    fetch(`${import.meta.env.BASE_URL}rooms.json`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => data && setRooms(data))
       .catch(() => {/* ignore */});

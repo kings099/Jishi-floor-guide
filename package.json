@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist -r https://github.com/kings099/Jishi-floor-guide.git"
   },
   "dependencies": {
     "framer-motion": "^12.14.0",
